@@ -1,0 +1,13 @@
+{
+  "name": "nightbuild-pricing-watcher",
+  "version": "1.0.0",
+  "description": "NightBuild exercise — harness and loop engineering with a provider pricing watcher",
+  "type": "module",
+  "scripts": {
+    "watch": "node watcher/watcher.js",
+    "watch:schedule": "node watcher/watcher.js --schedule"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

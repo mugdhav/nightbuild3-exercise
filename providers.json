@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "providers": [
+    {
+      "id": "synthai",
+      "name": "SynthAI",
+      "pricing_url": "https://www.vmugdha.in/nightbuild/prices/synthai.json",
+      "plans": [
+        {
+          "plan_name": "Developer",
+          "price_amount": 20.00,
+          "price_currency": "USD",
+          "price_cadence": "monthly",
+          "included_units": { "api_calls": 500000, "context_window_k": 128 },
+          "feature_flags": ["function_calling", "streaming", "batch_api"],
+          "page_last_seen": "2025-06-01T08:00:00Z"
+        },
+        {
+          "plan_name": "Team",
+          "price_amount": 60.00,
+          "price_currency": "USD",
+          "price_cadence": "monthly",
+          "included_units": { "api_calls": 2000000, "context_window_k": 200 },
+          "feature_flags": ["function_calling", "streaming", "batch_api", "priority_queue"],
+          "page_last_seen": "2025-06-01T08:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "orbitalai",
+      "name": "OrbitalAI",
+      "pricing_url": "https://www.vmugdha.in/nightbuild/prices/orbitalai.json",
+      "plans": [
+        {
+          "plan_name": "Starter",
+          "price_amount": 0.00,
+          "price_currency": "USD",
+          "price_cadence": "monthly",
+          "included_units": { "api_calls": 10000, "context_window_k": 32 },
+          "feature_flags": ["streaming"],
+          "page_last_seen": "2025-06-01T08:00:00Z"
+        },
+        {
+          "plan_name": "Pro",
+          "price_amount": 45.00,
+          "price_currency": "USD",
+          "price_cadence": "monthly",
+          "included_units": { "api_calls": 1000000, "context_window_k": 128 },
+          "feature_flags": ["function_calling", "streaming", "fine_tuning"],
+          "page_last_seen": "2025-06-01T08:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "vectronai",
+      "name": "VectronAI",
+      "pricing_url": "https://www.vmugdha.in/nightbuild/prices/vectronai.json",
+      "plans": [
+        {
+          "plan_name": "Base",
+          "price_amount": 12.00,
+          "price_currency": "USD",
+          "price_cadence": "monthly",
+          "included_units": { "api_calls": 250000, "context_window_k": 64 },
+          "feature_flags": ["streaming", "embeddings"],
+          "page_last_seen": "2025-06-01T08:00:00Z"
+        }
+      ]
+    }
+  ]
+}
