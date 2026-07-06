@@ -1,0 +1,21 @@
+{
+  "provider": "OrbitalAI",
+  "plans": [
+    {
+      "plan_name": "Starter",
+      "price_amount": 0.00,
+      "price_currency": "USD",
+      "price_cadence": "monthly",
+      "included_units": { "api_calls": 10000, "context_window_k": 32 },
+      "feature_flags": ["streaming"]
+    },
+    {
+      "plan_name": "Pro",
+      "price_amount": 45.00,
+      "price_currency": "USD",
+      "price_cadence": "monthly",
+      "included_units": { "api_calls": 1000000, "context_window_k": 128 },
+      "feature_flags": ["function_calling", "streaming", "fine_tuning"]
+    }
+  ]
+}

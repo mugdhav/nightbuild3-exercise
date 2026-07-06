@@ -1,0 +1,29 @@
+{
+  "provider": "SynthAI",
+  "plans": [
+    {
+      "plan_name": "Developer",
+      "price_amount": 25.00,
+      "price_currency": "USD",
+      "price_cadence": "monthly",
+      "included_units": { "api_calls": 500000, "context_window_k": 128 },
+      "feature_flags": ["function_calling", "streaming", "batch_api"]
+    },
+    {
+      "plan_name": "Team",
+      "price_amount": 75.00,
+      "price_currency": "USD",
+      "price_cadence": "monthly",
+      "included_units": { "api_calls": 2000000, "context_window_k": 200 },
+      "feature_flags": ["function_calling", "streaming", "batch_api", "priority_queue"]
+    },
+    {
+      "plan_name": "Enterprise",
+      "price_amount": 299.00,
+      "price_currency": "USD",
+      "price_cadence": "monthly",
+      "included_units": { "api_calls": "unlimited", "context_window_k": 1000 },
+      "feature_flags": ["function_calling", "streaming", "batch_api", "priority_queue", "dedicated_infra", "sla_99_9"]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "provider": "VectronAI",
+  "plans": [
+    {
+      "plan_name": "Base",
+      "price_amount": 99.00,
+      "price_currency": "USD",
+      "price_cadence": "annual",
+      "included_units": { "api_calls": 250000, "context_window_k": 64 },
+      "feature_flags": ["streaming", "embeddings"]
+    }
+  ]
+}

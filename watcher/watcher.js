@@ -3,8 +3,14 @@
  * NightBuild Exercise — Pricing Watcher
  *
  * Implements the loop defined in LOOP.md.
- * Run: node watcher/watcher.js
- * Schedule: node watcher/watcher.js --schedule   (runs every 5 minutes)
+ *
+ * Single run:  node watcher.js  (from inside watcher/)
+ * Scheduled:   node watcher.js --schedule  (from inside watcher/)
+ *
+ * In --schedule mode, the watcher runs immediately, then every 3 minutes,
+ * for a maximum of 3 iterations. It exits automatically after the third run.
+ * This matches the mutator's 3-state sequence: each watcher iteration
+ * corresponds to one mutator state push.
  */
 
 import fs from "fs";
@@ -12,7 +18,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = __dirname; // all state files live alongside watcher.js in watcher/
 
 // ── File paths ────────────────────────────────────────────────────────────────
 const PROVIDERS_PATH = path.join(ROOT, "providers.json");
@@ -357,12 +363,26 @@ async function runWatcher() {
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────────
-const SCHEDULE_MS = 3 * 60 * 1000; // 3 minutes — matches the mutator push interval
+const SCHEDULE_MS    = 3 * 60 * 1000; // 3 minutes — matches the mutator push interval
+const MAX_ITERATIONS = 3;             // matches the mutator's 3-state sequence
 
 if (process.argv.includes("--schedule")) {
-  console.log(`[SCHEDULED] Watcher will run every 3 minutes. Press Ctrl+C to stop.\n`);
-  runWatcher();
-  setInterval(runWatcher, SCHEDULE_MS);
+  console.log(`[SCHEDULED] Watcher will run every 3 minutes, ${MAX_ITERATIONS} times, then exit.\n`);
+
+  let iteration = 0;
+
+  async function tick() {
+    iteration++;
+    console.log(`[ITERATION ${iteration}/${MAX_ITERATIONS}]\n`);
+    await runWatcher();
+    if (iteration >= MAX_ITERATIONS) {
+      console.log(`\n[DONE] ${MAX_ITERATIONS} iterations complete. Watcher exiting.\n`);
+      process.exit(0);
+    }
+  }
+
+  tick();
+  setInterval(tick, SCHEDULE_MS);
 } else {
   runWatcher();
 }

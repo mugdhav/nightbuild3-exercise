@@ -1,0 +1,13 @@
+{
+  "name": "nightbuild-pricing-mutator",
+  "version": "1.0.0",
+  "description": "Instructor tool for NightBuild3. Cycles fake pricing pages through 3 states, committing and pushing to the website repo every 3 minutes.",
+  "type": "module",
+  "scripts": {
+    "start": "node mutator.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {}
+}
