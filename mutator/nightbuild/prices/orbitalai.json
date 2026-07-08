@@ -2,16 +2,17 @@
   "provider": "OrbitalAI",
   "plans": [
     {
-      "plan_name": "Starter",
-      "price_amount": 0,
+      "plan_name": "Growth",
+      "price_amount": 29,
       "price_currency": "USD",
       "price_cadence": "monthly",
       "included_units": {
-        "api_calls": 10000,
-        "context_window_k": 32
+        "api_calls": 250000,
+        "context_window_k": 64
       },
       "feature_flags": [
-        "streaming"
+        "streaming",
+        "function_calling"
       ]
     },
     {
@@ -30,6 +31,6 @@
       ]
     }
   ],
-  "_state": 1,
-  "_updated_at": "2026-07-08T19:23:32.583Z"
+  "_state": 2,
+  "_updated_at": "2026-07-08T19:26:36.568Z"
 }
