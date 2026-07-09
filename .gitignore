@@ -2,3 +2,4 @@ mutator/.env
 mutator/node_modules/
 node_modules/
 APPROVAL.md
+remote/

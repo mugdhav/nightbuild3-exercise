@@ -14,20 +14,25 @@ nightbuild3-exercise/
 ├── README.md                    ← you are here
 ├── .gitignore
 │
-├── watcher/                     ← participant component
+├── remote/                      ← gitignored, created at runtime by the mutator
+│   └── nightbuild/prices/       ← the "live" pages, served over localhost
+│
+├── watcher/
 │   ├── watcher.js               ← the watcher loop
 │   ├── providers.json           ← local pricing catalogue (starts intentionally stale)
 │   ├── HARNESS.md               ← harness spec: read before running
 │   ├── LOOP.md                  ← loop spec: read before running
 │   ├── DIFF.md                  ← written by the watcher when changes are detected
 │   ├── RUN_LOG.md               ← append-only run history
-│   ├── APPROVAL.md.template     ← copy this to create APPROVAL.md
-│   └── README.md                ← participant instructions
+│   ├── APPROVAL.md.template     ← the format your agent writes APPROVAL.md in
+│   └── README.md
 │
-└── mutator/                     ← instructor component
+└── mutator/
     ├── mutator.js               ← the mutator loop
     ├── package.json
-    ├── README.md                ← instructor instructions
+    ├── HARNESS.md               ← harness spec: read before running
+    ├── LOOP.md                  ← loop spec: read before running
+    ├── README.md
     └── states/
         ├── 0/   synthai.json  orbitalai.json  vectronai.json
         ├── 1/   synthai.json  orbitalai.json  vectronai.json
@@ -38,99 +43,101 @@ nightbuild3-exercise/
 
 ## What this repo contains
 
-| Folder | Component | Who runs it | Loop type |
-|---|---|---|---|
-| `watcher/` | Pricing watcher | Participant | Goal-conditioned, 3 iterations, fixed exit |
-| `mutator/` | Pricing page mutator | Instructor | Interval, 3 iterations, fixed exit |
+| Folder | Component | Loop type |
+|---|---|---|
+| `watcher/` | Pricing watcher | Goal-conditioned, 3 iterations, fixed exit |
+| `mutator/` | Pricing page mutator | Interval, 3 iterations + grace period, self-terminating |
 
-The two loops communicate through a shared public URL:
-`https://www.vmugdha.in/nightbuild/prices/`
+The two loops communicate through a local HTTP endpoint:
+`http://localhost:8787/nightbuild/prices/`. Nothing external is
+involved — the pages live inside this repo, in `remote/`, and the
+mutator is what serves them.
 
-The mutator commits and pushes JSON pricing fixtures to that URL every
-3 minutes, cycling through 3 states. The watcher fetches from that URL,
-diffs the result against a local catalogue, and halts for human approval
-before applying any update. Both loops run exactly 3 iterations and exit.
+The mutator writes JSON pricing fixtures to that endpoint every
+3 minutes, cycling through 3 states, then shuts itself down. The
+watcher fetches from that endpoint, diffs the result against a local
+catalogue, and halts for human approval before applying any update.
 
 ---
 
-## Who runs the watcher loop
+## Who runs each loop
 
-You do not run `watcher.js` at a terminal yourself. You ask a coding
-agent (Claude Code, Codex, Antigravity, Cursor, or similar) to run the
-loop on your behalf. The agent is the thing `HARNESS.md` and `LOOP.md`
-are written to constrain. Concretely:
+Neither loop is meant to be run at a terminal directly by you. You ask a
+coding agent (Claude Code, Codex, Antigravity, Cursor, or similar) to
+run each one on your behalf. The agent is the thing each component's
+`HARNESS.md` and `LOOP.md` are written to constrain.
 
+**Watcher:**
 - The agent invokes `watcher.js`, watches its output, and reports each
   diff to you conversationally (in addition to the `DIFF.md` file the
-  script writes). A diff here is a mismatch between the prices on the
-  remote pages (`https://www.vmugdha.in/nightbuild/prices/`) and your
-  local catalogue (`providers.json`) — caused by the mutator periodically
-  changing the remote prices while your local copy stays fixed until you
-  approve an update.
+  script writes). A diff here is a mismatch between the prices the
+  mutator is currently serving and your local catalogue
+  (`providers.json`) — caused by the mutator periodically changing them
+  while your local copy stays fixed until you approve an update.
 - When a diff is pending, the agent asks you to approve bringing the
-  local catalogue into alignment with the remote pricing pages.
+  local catalogue into alignment with the served pricing pages.
 - On approval, **the agent writes `APPROVAL.md`** itself, with the
   matching `RUN_ID` and `STATUS: APPROVED` — you never hand-edit that
   file yourself.
 - On the next iteration, `watcher.js` reads `APPROVAL.md` and applies
   the update.
 
-Your only action at the approval gate is answering yes or no.
+Your only action at the watcher's approval gate is answering yes or no.
+
+**Mutator:**
+- The agent invokes `mutator.js`, which writes each of the 3 states in
+  turn and reports state transitions to you.
+- No approval gate here — the mutator never asks for one. It runs to
+  completion and shuts its own server down automatically; see
+  `mutator/HARNESS.md` for its scope (writes confined to `remote/`, no
+  network calls out, capped at 3 iterations) and `mutator/LOOP.md` for
+  timing and the automatic shutdown.
 
 ---
 
 ## How the two loops relate
 
 ```
-Mutator (instructor)        Live pages (vmugdha.in)       Watcher (participant)
+Mutator                     Local pages (localhost:8787)      Watcher
 
-State 0 → git push  →→→   synthai.json            →→→   fetch → diff → NO_DIFF
-State 1 → git push  →→→   orbitalai.json          →→→   fetch → diff → PENDING_APPROVAL
-State 2 → git push  →→→   vectronai.json          →→→   fetch → diff → PENDING_APPROVAL
-exits automatically                                       exits automatically
+State 0 → write  →→→   synthai.json                →→→   fetch → diff → NO_DIFF
+State 1 → write  →→→   orbitalai.json              →→→   fetch → diff → PENDING_APPROVAL
+State 2 → write  →→→   vectronai.json              →→→   fetch → diff → PENDING_APPROVAL
+grace period, then shuts down                              exits automatically
 ```
 
 ---
 
 ## Quick start
 
-You run both loops yourself, in two terminal windows.
+Ask a coding agent to run each loop, one per terminal/session.
 
-**Terminal 1 — Mutator, run from the repo root:**
+**Mutator, from the repo root:**
 
 ```
 node mutator/mutator.js
 ```
 
-This one you run directly — it's a deterministic script with no agent
-involved. It pushes the 3 pricing states to
-`https://www.vmugdha.in/nightbuild/prices/` on a timer.
+**Watcher, from `watcher/`:**
 
-**Terminal 2 — Watcher:**
+```
+node watcher.js --schedule
+```
 
-Don't run `watcher.js` yourself. Instead, ask a coding agent (Claude Code,
-Codex, Antigravity, Cursor, or similar) to run the loop for you from
-inside `watcher/`. See "Who runs the watcher loop" above.
-
-Node.js 18 or later is required. Neither component has npm dependencies.
-
----
-
-## Prerequisites for the mutator
-
-The mutator commits and pushes to a GitHub Pages repo. Before running it,
-configure Git with push access to the repo that serves `vmugdha.in`, and
-verify with `git remote -v` from inside that repo root.
+Both commands above are what the agent runs on your behalf — you
+shouldn't need to type them yourself. Node.js 18 or later is required.
+Neither component has npm dependencies, and neither needs git beyond the
+initial `git clone`.
 
 ---
 
 ## Component documentation
 
-- `watcher/README.md` — participant instructions: how to run the watcher,
-  what to expect on each iteration, and extension exercises.
-- `mutator/README.md` — instructor instructions: session timing, state
-  sequence, and how to verify each push.
-- `watcher/HARNESS.md` — harness spec: phase permissions, schema-projection
-  contract, and verification gates.
-- `watcher/LOOP.md` — loop spec: exit conditions, iteration structure,
-  and retry policy.
+- `watcher/README.md` — how to run the watcher, what to expect on each
+  iteration, and extension exercises.
+- `mutator/README.md` — session timing, state sequence, and how to
+  verify each state.
+- `watcher/HARNESS.md` / `mutator/HARNESS.md` — harness specs: phase
+  permissions, tool scoping, and verification gates for each loop.
+- `watcher/LOOP.md` / `mutator/LOOP.md` — loop specs: exit conditions,
+  iteration structure, and (for the mutator) the automatic-shutdown gate.

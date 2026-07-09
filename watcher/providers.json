@@ -4,7 +4,7 @@
     {
       "id": "synthai",
       "name": "SynthAI",
-      "pricing_url": "https://www.vmugdha.in/nightbuild/prices/synthai.json",
+      "pricing_url": "http://localhost:8787/nightbuild/prices/synthai.json",
       "plans": [
         {
           "plan_name": "Developer",
@@ -29,7 +29,7 @@
     {
       "id": "orbitalai",
       "name": "OrbitalAI",
-      "pricing_url": "https://www.vmugdha.in/nightbuild/prices/orbitalai.json",
+      "pricing_url": "http://localhost:8787/nightbuild/prices/orbitalai.json",
       "plans": [
         {
           "plan_name": "Starter",
@@ -54,7 +54,7 @@
     {
       "id": "vectronai",
       "name": "VectronAI",
-      "pricing_url": "https://www.vmugdha.in/nightbuild/prices/vectronai.json",
+      "pricing_url": "http://localhost:8787/nightbuild/prices/vectronai.json",
       "plans": [
         {
           "plan_name": "Base",

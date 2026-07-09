@@ -4,15 +4,17 @@
 
 The watcher is a goal-conditioned loop that runs every 3 minutes for
 exactly 3 iterations, then exits. Each iteration fetches three fake
-Artificial Intelligence (AI) provider pricing pages from a live URL,
-diffs the result against your local catalogue (`providers.json`), and
-halts for your approval before applying any update.
+Artificial Intelligence (AI) provider pricing pages from a locally
+served URL, diffs the result against your local catalogue
+(`providers.json`), and halts for your approval before applying any
+update.
 
-You separately run a mutator loop that pushes pricing changes to those
-pages on a matching 3-minute schedule. The watcher detects those changes
-as they land — a diff is just a mismatch between the prices on the
-remote pages and what's in your local catalogue, caused by the mutator
-periodically changing the remote prices while your local copy stays
+You separately run a mutator loop (see `mutator/`) that serves those
+pages from `http://localhost:8787/nightbuild/prices/` and changes them
+on a matching 3-minute schedule — the pages live inside this repo. The
+watcher detects those changes as they land — a diff is just a mismatch between the prices the
+mutator is currently serving and what's in your local catalogue, caused
+by the mutator periodically changing them while your local copy stays
 fixed until you approve an update.
 
 You don't run `watcher.js` at a terminal yourself. You ask a coding agent
@@ -85,15 +87,16 @@ go.
 ## Step 3 — Confirm the live pricing pages are reachable
 
 Wait for State 0 (baseline) to be live — you'll know because you just ran
-the mutator and it printed the State 0 push.
+the mutator and it printed the State 0 write.
 
 ```
-curl https://www.vmugdha.in/nightbuild/prices/synthai.json
+curl http://localhost:8787/nightbuild/prices/synthai.json
 ```
 
 Expected output: a JSON object containing `"provider": "SynthAI"` and
-`"_state": 0`. If the request fails or `_state` is not `0`, wait a little
-longer for GitHub Pages to propagate before continuing.
+`"_state": 0`. Since this is served locally, the change is visible
+immediately — if the request fails, check that the mutator is still
+running.
 
 ---
 
