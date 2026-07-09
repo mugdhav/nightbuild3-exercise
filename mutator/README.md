@@ -1,12 +1,12 @@
-# NightBuild3 — Pricing Page Mutator (Instructor Tool)
+# NightBuild3 — Pricing Page Mutator
 
-This tool runs on the command prompt of your local Windows machine during
-the NightBuild3 session. It advances three fake Artificial Intelligence
-(AI) provider pricing pages through 3 states by committing and pushing
-JSON files to your website repo every 3 minutes.
+This tool runs in your terminal during the NightBuild3 session. It
+advances three fake Artificial Intelligence (AI) provider pricing pages
+through 3 states by committing and pushing JSON files to
+`https://www.vmugdha.in/nightbuild/prices/`.
 
-Participant watchers read those pages from `https://www.vmugdha.in/nightbuild/prices/`
-and diff them against their local `providers.json`.
+The watcher (run via a coding agent, from `watcher/`) reads those pages
+and diffs them against its local `providers.json`.
 
 ---
 
@@ -15,11 +15,11 @@ and diff them against their local `providers.json`.
 The mutator is a Node.js loop with exactly 3 iterations and a fixed exit.
 It does not run indefinitely.
 
-| Iteration | State | What participants see |
+| Iteration | State | What the watcher sees |
 |---|---|---|
 | 1 (t=0) | 0 — Baseline | Watcher exits `NO_DIFF`. Use this to verify setup before the session. |
-| 2 (t+3min) | 1 — First change set | Watcher exits `PENDING_APPROVAL`. Participants write `APPROVAL.md`. |
-| 3 (t+6min) | 2 — Second change set | Watcher exits `PENDING_APPROVAL` again after they approve Run 1. |
+| 2 (t+3min) | 1 — First change set | Watcher exits `PENDING_APPROVAL`. Approve to write `APPROVAL.md`. |
+| 3 (t+6min) | 2 — Second change set | Watcher exits `PENDING_APPROVAL` again after Run 1 is approved. |
 
 Changes planted per state:
 
@@ -39,65 +39,33 @@ Changes planted per state:
 
 ## Prerequisites
 
-**On the command prompt of your local Windows machine, verify:**
+Verify in your terminal:
 
 1. Node.js 18 or later:
    ```
    node --version
    ```
 
-2. Git installed and configured with push access to the website repo:
+2. Git installed and configured with push access to this repo:
    ```
    git --version
    git remote -v
    ```
-   The `origin` remote must point to your website repo
-   (the repo that publishes to `www.vmugdha.in` via GitHub Pages).
+   The `origin` remote must point to this repo (the repo that publishes
+   to `www.vmugdha.in` via GitHub Pages).
 
-3. GitHub Pages is enabled on the website repo, serving from the correct
-   branch (`main` or `gh-pages`), with the custom domain `www.vmugdha.in`
+3. GitHub Pages is enabled on this repo, serving from the correct branch
+   (`main` or `gh-pages`), with the custom domain `www.vmugdha.in`
    configured.
 
-4. The website repo has a `nightbuild/prices/` directory, or the mutator
-   will create it on the first push.
-
----
-
-## Setup
-
-**Step 1.** Clone or copy this mutator directory into your website repo.
-The directory structure inside your website repo should be:
-
-```
-your-website-repo/
-├── nightbuild/
-│   └── prices/              ← created by the mutator on first push
-├── mutator/
-│   ├── mutator.js
-│   ├── package.json
-│   └── states/
-│       ├── 0/  synthai.json  orbitalai.json  vectronai.json
-│       ├── 1/  synthai.json  orbitalai.json  vectronai.json
-│       └── 2/  synthai.json  orbitalai.json  vectronai.json
-└── ... (rest of your site)
-```
-
-**Step 2.** Verify the mutator can reach the `states/` directory. The
-mutator resolves state files relative to its own location, not relative
-to the current working directory.
+4. This repo has a `nightbuild/prices/` directory, or the mutator will
+   create it on the first push.
 
 ---
 
 ## Running the mutator
 
-Navigate to your website repo root on the command prompt of your local
-Windows machine, then run:
-
-```
-node mutator/mutator.js
-```
-
-On macOS or Linux:
+From the repo root:
 
 ```
 node mutator/mutator.js
@@ -116,35 +84,28 @@ Run the mutator before and during the session, not after.
 
 ```
 Before session:  node mutator/mutator.js
-                 (State 0 pushes immediately — participants verify setup)
+                 (State 0 pushes immediately — verify setup)
 
                  ← 3 minutes pass →
 
-                 (State 1 pushes — signal participants to start their watchers)
+                 (State 1 pushes — start the watcher now)
 
                  ← 3 minutes pass →
 
-                 (State 2 pushes — participants who approved Run 1 will see a second diff)
+                 (State 2 pushes — a second diff appears if Run 1 was approved)
 
                  Mutator exits. Session complete.
 ```
 
-Signal participants at these two moments:
-1. After State 0 is confirmed live: "Verify the pricing pages are reachable."
-2. After State 1 is pushed: "Start your watcher now."
+Two moments to act on:
+1. After State 0 is confirmed live: verify the pricing pages are reachable.
+2. After State 1 is pushed: start the watcher.
 
 ---
 
 ## Verifying a push
 
-After each push, confirm the live page reflects the new state on the
-command prompt of your local Windows machine:
-
-```
-curl https://www.vmugdha.in/nightbuild/prices/synthai.json
-```
-
-On macOS or Linux:
+After each push, confirm the live page reflects the new state:
 
 ```
 curl https://www.vmugdha.in/nightbuild/prices/synthai.json
@@ -153,14 +114,14 @@ curl https://www.vmugdha.in/nightbuild/prices/synthai.json
 The response includes `"_state": N` where N is the state just pushed.
 GitHub Pages propagates commits within approximately 30 seconds. If the
 field still shows the previous state after 60 seconds, check the Pages
-build status at `https://github.com/YOUR_USERNAME/YOUR_REPO/actions`.
+build status at `https://github.com/mugdhav/nightbuild3-exercise/actions`.
 
 ---
 
 ## Re-running a state
 
-If you need to re-push a specific state (for example, if participants
-missed a diff), run:
+If you need to re-push a specific state (for example, if a diff was
+missed), run:
 
 ```
 node mutator/mutator.js --state 1
@@ -180,8 +141,8 @@ reference to manually copy and push a single state if needed, or modify
 To reset the live pages to State 0 after the session, run the mutator
 again. State 0 pushes first, within the first iteration.
 
-Alternatively, delete the `nightbuild/prices/` directory from the website
-repo, commit, and push:
+Alternatively, delete the `nightbuild/prices/` directory, commit, and
+push:
 
 ```
 git rm -r nightbuild/prices

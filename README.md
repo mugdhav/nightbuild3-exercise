@@ -53,6 +53,32 @@ before applying any update. Both loops run exactly 3 iterations and exit.
 
 ---
 
+## Who runs the watcher loop
+
+You do not run `watcher.js` at a terminal yourself. You ask a coding
+agent (Claude Code, Codex, Antigravity, Cursor, or similar) to run the
+loop on your behalf. The agent is the thing `HARNESS.md` and `LOOP.md`
+are written to constrain. Concretely:
+
+- The agent invokes `watcher.js`, watches its output, and reports each
+  diff to you conversationally (in addition to the `DIFF.md` file the
+  script writes). A diff here is a mismatch between the prices on the
+  remote pages (`https://www.vmugdha.in/nightbuild/prices/`) and your
+  local catalogue (`providers.json`) — caused by the mutator periodically
+  changing the remote prices while your local copy stays fixed until you
+  approve an update.
+- When a diff is pending, the agent asks you to approve bringing the
+  local catalogue into alignment with the remote pricing pages.
+- On approval, **the agent writes `APPROVAL.md`** itself, with the
+  matching `RUN_ID` and `STATUS: APPROVED` — you never hand-edit that
+  file yourself.
+- On the next iteration, `watcher.js` reads `APPROVAL.md` and applies
+  the update.
+
+Your only action at the approval gate is answering yes or no.
+
+---
+
 ## How the two loops relate
 
 ```
@@ -68,19 +94,23 @@ exits automatically                                       exits automatically
 
 ## Quick start
 
-Open two terminal windows on the same machine, or one per role.
+You run both loops yourself, in two terminal windows.
 
-**Terminal 1 — Mutator (instructor), run from your website repo root:**
-
-```
-node nightbuild/mutator/mutator.js
-```
-
-**Terminal 2 — Watcher (participant), run from `watcher/`:**
+**Terminal 1 — Mutator, run from the repo root:**
 
 ```
-node watcher.js --schedule
+node mutator/mutator.js
 ```
+
+This one you run directly — it's a deterministic script with no agent
+involved. It pushes the 3 pricing states to
+`https://www.vmugdha.in/nightbuild/prices/` on a timer.
+
+**Terminal 2 — Watcher:**
+
+Don't run `watcher.js` yourself. Instead, ask a coding agent (Claude Code,
+Codex, Antigravity, Cursor, or similar) to run the loop for you from
+inside `watcher/`. See "Who runs the watcher loop" above.
 
 Node.js 18 or later is required. Neither component has npm dependencies.
 

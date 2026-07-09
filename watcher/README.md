@@ -8,23 +8,30 @@ Artificial Intelligence (AI) provider pricing pages from a live URL,
 diffs the result against your local catalogue (`providers.json`), and
 halts for your approval before applying any update.
 
-The instructor runs a separate mutator loop that pushes pricing changes
-to those pages on a matching 3-minute schedule. Your watcher detects
-those changes as they land.
+You separately run a mutator loop that pushes pricing changes to those
+pages on a matching 3-minute schedule. The watcher detects those changes
+as they land — a diff is just a mismatch between the prices on the
+remote pages and what's in your local catalogue, caused by the mutator
+periodically changing the remote prices while your local copy stays
+fixed until you approve an update.
+
+You don't run `watcher.js` at a terminal yourself. You ask a coding agent
+(Claude Code, Codex, Antigravity, Cursor, or similar) to run the loop for
+you. The agent is the thing `HARNESS.md` and `LOOP.md` are written to
+constrain — it invokes `watcher.js`, reports each diff to you
+conversationally, asks you to approve bringing the local catalogue into
+alignment with the remote pages, and writes `APPROVAL.md` itself once you
+say yes. You never hand-edit `APPROVAL.md`.
 
 ---
 
 ## Prerequisites
 
-- Node.js 18 or later.
-
-  On the command prompt of your local Windows machine:
+- Node.js 18 or later:
 
   ```
   node --version
   ```
-
-  On macOS or Linux, run the same command in a terminal.
 
 - Git installed:
 
@@ -38,27 +45,23 @@ those changes as they land.
 
 ```
 watcher/
-├── watcher.js            ← the loop — run this
+├── watcher.js            ← the loop — your agent runs this
 ├── providers.json        ← your local catalogue (starts intentionally stale)
-├── HARNESS.md            ← harness spec: read before running
-├── LOOP.md               ← loop spec: read before running
-├── DIFF.md               ← written by the watcher when changes are detected
-├── RUN_LOG.md            ← append-only run history
-└── APPROVAL.md.template  ← copy this to create APPROVAL.md
+├── HARNESS.md             ← harness spec: read before running
+├── LOOP.md                ← loop spec: read before running
+├── DIFF.md                ← written by the watcher when changes are detected
+├── RUN_LOG.md             ← append-only run history
+└── APPROVAL.md.template  ← the format your agent writes APPROVAL.md in
 ```
 
 ---
 
 ## Step 1 — Clone the repo
 
-On the command prompt of your local Windows machine:
-
 ```
 git clone https://github.com/mugdhav/nightbuild3-exercise.git
 cd nightbuild3-exercise/watcher
 ```
-
-On macOS or Linux, run the same commands in a terminal.
 
 ---
 
@@ -75,44 +78,29 @@ fetch through report through update, and the retry policy per failure type.
 
 `watcher.js` is a direct implementation of those specs. Trace each action
 in the terminal output back to the relevant section of the spec as you
-run the steps below.
+go.
 
 ---
 
 ## Step 3 — Confirm the live pricing pages are reachable
 
-Wait for the instructor's signal that State 0 (baseline) is live.
-
-On the command prompt of your local Windows machine:
-
-```
-curl https://www.vmugdha.in/nightbuild/prices/synthai.json
-```
-
-On macOS or Linux:
+Wait for State 0 (baseline) to be live — you'll know because you just ran
+the mutator and it printed the State 0 push.
 
 ```
 curl https://www.vmugdha.in/nightbuild/prices/synthai.json
 ```
 
 Expected output: a JSON object containing `"provider": "SynthAI"` and
-`"_state": 0`. If the request fails or `_state` is not `0`, notify the
-instructor before continuing.
+`"_state": 0`. If the request fails or `_state` is not `0`, wait a little
+longer for GitHub Pages to propagate before continuing.
 
 ---
 
 ## Step 4 — Start the watcher
 
-Wait for the instructor's signal that State 1 has been pushed. Then start
-the watcher from inside the `watcher/` folder.
-
-On the command prompt of your local Windows machine:
-
-```
-node watcher.js --schedule
-```
-
-On macOS or Linux:
+Wait for State 1 to be pushed. Then ask your agent to run the watcher
+loop from inside `watcher/`, for example:
 
 ```
 node watcher.js --schedule
@@ -120,8 +108,8 @@ node watcher.js --schedule
 
 The watcher runs immediately, then every 3 minutes, for 3 iterations
 total. It prints `[ITERATION N/3]` at the start of each run and exits
-automatically after the third iteration. Leave this terminal open until
-it exits.
+automatically after the third iteration. Keep this session open until it
+exits.
 
 ---
 
@@ -143,7 +131,8 @@ Phase 3: Writing DIFF.md (2 change(s), 1 warning(s))...
 [ACTION REQUIRED] Write APPROVAL.md, then re-run the watcher.
 ```
 
-Open `DIFF.md`. Before continuing, verify all three of the following:
+Your agent should report the diff to you directly, but open `DIFF.md` too
+and verify all three of the following:
 
 - `SynthAI / Developer / price_amount` is classified as `PRICE_CHANGE`.
   The catalogue holds `20.00`; the page now returns `25.00`.
@@ -158,29 +147,13 @@ The loop has halted at the first human gate defined in `HARNESS.md`.
 
 ---
 
-## Step 5 — Write APPROVAL.md
+## Step 5 — Approve the update
 
-Copy `APPROVAL.md.template` to `APPROVAL.md`.
+Your agent will ask whether to bring the local catalogue into alignment
+with the remote pages. Say yes.
 
-On the command prompt of your local Windows machine:
-
-```
-copy APPROVAL.md.template APPROVAL.md
-```
-
-On macOS or Linux:
-
-```
-cp APPROVAL.md.template APPROVAL.md
-```
-
-Open `APPROVAL.md` in any text editor and fill in:
-
-- `RUN_ID`: copy the value exactly from the top of `DIFF.md`. Format: `YYYY-MM-DD-HH:MM`.
-- `REVIEWED_BY`: your name or any identifier.
-- `REVIEWED_AT`: current date and time in ISO 8601 format. Example: `2025-07-04T09:30:00Z`.
-
-Set `STATUS: APPROVED` and save. The completed file:
+Your agent then writes `APPROVAL.md` itself, in the format specified by
+`APPROVAL.md.template`:
 
 ```
 RUN_ID: 2025-07-04-09:25
@@ -190,8 +163,17 @@ REVIEWED_BY: your-name
 REVIEWED_AT: 2025-07-04T09:30:00Z
 ```
 
-The watcher validates this file strictly. A missing `RUN_ID` or `STATUS`
+`RUN_ID` must match the value at the top of `DIFF.md` exactly. The
+watcher validates this file strictly — a missing `RUN_ID` or `STATUS`
 field causes it to exit with `ERROR` rather than proceed.
+
+If you'd rather write it yourself for the exercise, copy the template and
+fill it in:
+
+```
+copy APPROVAL.md.template APPROVAL.md   # Windows
+cp APPROVAL.md.template APPROVAL.md     # macOS/Linux
+```
 
 ---
 
@@ -228,8 +210,8 @@ Open `providers.json` and verify:
 
 ## Iteration 3 — NO_DIFF or second PENDING_APPROVAL
 
-On the third tick, one of two things happens depending on whether the
-instructor has pushed State 2.
+On the third tick, one of two things happens depending on whether
+State 2 has been pushed yet.
 
 **State 2 not yet live:** the watcher finds no classified diffs against
 the now-updated `providers.json` and exits `NO_DIFF`.
